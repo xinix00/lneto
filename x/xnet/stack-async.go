@@ -53,6 +53,10 @@ type StackAsync struct {
 	lookup  dns.Message
 	dnssv   netip.Addr
 
+	// ephPort drives sequential ephemeral-port allocation (see
+	// [StackAsync.ephemeralPort]); zero means not yet seeded.
+	ephPort uint32
+
 	ntpUDP internet.StackUDPPort
 	ntp    ntp.Client
 
@@ -350,6 +354,27 @@ func (s *StackAsync) Prand32() (randval uint32) {
 	randval = s.prand32()
 	s.mu.Unlock()
 	return randval
+}
+
+// ephemeralPort returns the next port from the IANA dynamic range
+// (49152-65535, RFC 6335 §6), allocated sequentially from a per-stack random
+// starting point. Sequential allocation matters: picking every port at random
+// reuses a recently-released port at birthday-paradox rates (~1% chance per
+// dial after 200 dials), and a reused 4-tuple collides with connection state
+// the previous conversation left behind — the local peer's TIME-WAIT, or the
+// flow table of a NAT in the path — which swallows the new SYN outright.
+// Sequential allocation only revisits a port after the full 16384-port cycle.
+// The random start keeps a rebooted node off the ports its previous life just
+// used.
+func (s *StackAsync) ephemeralPort() uint16 {
+	s.mu.Lock()
+	if s.ephPort == 0 {
+		s.ephPort = s.prand32()%16384 | 1
+	}
+	port := 49152 + s.ephPort%16384
+	s.ephPort++
+	s.mu.Unlock()
+	return uint16(port)
 }
 
 func (s *StackAsync) prand32() uint32 {

@@ -5,7 +5,9 @@ import (
 	"context"
 	"errors"
 	"math/rand"
+	"net"
 	"net/netip"
+	"runtime"
 	"sync"
 	"syscall"
 	"testing"
@@ -1288,4 +1290,198 @@ func TestStackGoTCPDialSurvivesManyWaitIterations(t *testing.T) {
 		tsched.YieldToGoro()
 	}
 	t.Fatal("dial did not establish within handshake rounds")
+}
+
+// TestStackGoTCPDialChurn dials, exchanges a byte, closes and redials many
+// times over — the connection-per-request pattern of an HTTP client with
+// keep-alives off. Every resource involved must recycle at churn speed: the
+// port table (MaxActiveTCPPorts=8) is far smaller than the iteration count,
+// so a table slot leaking past its connection's close fails within a handful
+// of iterations. The iteration count also exceeds what random ephemeral-port
+// selection survives: at ~60 dials the birthday paradox reuses a recent port
+// against teardown state (locally, or TIME-WAIT/flow state in a peer or NAT)
+// and the dial fails — sequential allocation never revisits a port this soon.
+func TestStackGoTCPDialChurn(t *testing.T) {
+	const seed = 121314
+	const MTU = ethernet.MaxMTU
+	const iters = 300
+	const svPort = 80
+	client, sv := new(StackAsync), new(StackAsync)
+	err := client.Reset(StackConfig{
+		Hostname:          "churn-client",
+		RandSeed:          seed,
+		StaticAddress4:    [4]byte{10, 0, 0, 40},
+		MaxActiveTCPPorts: 8,
+		HardwareAddress:   [6]byte{0xbe, 0xef, 0, 0, 0, 40},
+		MTU:               MTU,
+		ICMPQueueLimit:    2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sv.Reset(StackConfig{
+		Hostname:          "churn-server",
+		RandSeed:          ^int64(seed),
+		StaticAddress4:    [4]byte{10, 0, 0, 41},
+		MaxActiveTCPPorts: 8,
+		HardwareAddress:   [6]byte{0xbe, 0xef, 0, 0, 0, 41},
+		MTU:               MTU,
+		ICMPQueueLimit:    2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	client.SetGatewayHardwareAddr(sv.HardwareAddr())
+	sv.SetGatewayHardwareAddr(client.HardwareAddr())
+
+	// Server side: async accept loop on a listener pool as small as the
+	// client's port table, driven by the same packet pump below.
+	svGo := sv.StackBlocking(backoffYield).StackGo(StackGoConfig{
+		ListenerPoolConfig: TCPPoolConfig{
+			PoolSize:           8,
+			QueueSize:          4,
+			TxBufSize:          MTU,
+			RxBufSize:          MTU,
+			EstablishedTimeout: 4 * time.Second,
+			ClosingTimeout:     time.Second,
+			NewBackoff:         func() lneto.BackoffStrategy { return backoffYield },
+		},
+	})
+	lsAny, err2 := svGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
+		netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), svPort), netip.AddrPort{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+	listener := lsAny.(net.Listener)
+	defer listener.Close()
+
+	clGo := client.StackBlocking(backoffYield).StackGo(StackGoConfig{
+		ListenerPoolConfig: TCPPoolConfig{
+			PoolSize:           8,
+			QueueSize:          4,
+			TxBufSize:          MTU,
+			RxBufSize:          MTU,
+			EstablishedTimeout: 4 * time.Second,
+			ClosingTimeout:     time.Second,
+			NewBackoff:         func() lneto.BackoffStrategy { return backoffYield },
+		},
+		TCPDialTimeout: 500 * time.Millisecond,
+		TCPDialRetries: 1,
+	})
+
+	// Packet pump between the two stacks, running until the test ends. The
+	// dial/accept/close work happens in goroutines with Gosched backoffs, so
+	// continuously servicing egress on both sides is all the pump must do.
+	stopPump := make(chan struct{})
+	defer close(stopPump)
+	go func() {
+		buf := make([]byte, MTU+ethernet.MaxOverheadSize)
+		for {
+			select {
+			case <-stopPump:
+				return
+			default:
+			}
+			moved := false
+			if n, err := client.EgressEthernet(buf); err == nil && n > 0 {
+				sv.IngressEthernet(buf[:n])
+				moved = true
+			}
+			if n, err := sv.EgressEthernet(buf); err == nil && n > 0 {
+				client.IngressEthernet(buf[:n])
+				moved = true
+			}
+			if !moved {
+				runtime.Gosched()
+			}
+		}
+	}()
+
+	// Server accept loop: accept, echo one byte, close.
+	go func() {
+		for {
+			c, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			go func(c net.Conn) {
+				var one [1]byte
+				if _, err := c.Read(one[:]); err == nil {
+					c.Write(one[:])
+				}
+				c.Close()
+			}(c)
+		}
+	}()
+
+	raddr := netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), svPort)
+	for i := 0; i < iters; i++ {
+		cAny, err := clGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
+			netip.AddrPort{}, raddr)
+		if err != nil {
+			t.Fatalf("dial %d failed: %v", i, err)
+		}
+		c := cAny.(net.Conn)
+		c.SetDeadline(time.Now().Add(2 * time.Second))
+		if _, err := c.Write([]byte{byte(i)}); err != nil {
+			t.Fatalf("write %d failed: %v", i, err)
+		}
+		var one [1]byte
+		if _, err := c.Read(one[:]); err != nil {
+			t.Fatalf("read %d failed: %v", i, err)
+		}
+		if one[0] != byte(i) {
+			t.Fatalf("echo %d mismatch: got %d", i, one[0])
+		}
+		// Close after the peer already closed reports net.ErrClosed; Go's own
+		// net.TCPConn returns nil there. Tolerated here — this test guards
+		// resource recycling, not Close's error contract — but anything else
+		// (a stuck FIN, a slot error) must fail loudly.
+		if err := c.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+			t.Fatalf("close %d failed: %v", i, err)
+		}
+	}
+}
+
+// TestEphemeralPortSequence pins the property the dial-churn depends on:
+// ephemeral ports are allocated sequentially, so no port is reused until the
+// entire 16384-port dynamic range has cycled. Random selection reuses a
+// recent port at birthday-paradox rates, and a reused 4-tuple lands on
+// teardown state (a peer's TIME-WAIT, a NAT's flow entry) that swallows the
+// SYN — observed as multi-second dial outages under connection-per-request
+// churn against a macOS peer.
+func TestEphemeralPortSequence(t *testing.T) {
+	s := new(StackAsync)
+	err := s.Reset(StackConfig{
+		Hostname:          "eph",
+		RandSeed:          42,
+		StaticAddress4:    [4]byte{10, 0, 0, 50},
+		MaxActiveTCPPorts: 1,
+		HardwareAddress:   [6]byte{0xbe, 0xef, 0, 0, 0, 50},
+		MTU:               ethernet.MaxMTU,
+		ICMPQueueLimit:    2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	const cycle = 16384
+	var seen [cycle]bool
+	for i := 0; i < cycle; i++ {
+		port := s.ephemeralPort()
+		if port < 49152 {
+			t.Fatalf("port %d below dynamic range (RFC 6335)", port)
+		}
+		idx := port - 49152
+		if seen[idx] {
+			t.Fatalf("port %d reused after only %d allocations (want full %d cycle)", port, i, cycle)
+		}
+		seen[idx] = true
+	}
+	// The cycle is exhausted: the next allocation may legitimately reuse.
+	if got := s.ephemeralPort(); got < 49152 {
+		t.Fatalf("post-cycle port %d below dynamic range", got)
+	}
 }

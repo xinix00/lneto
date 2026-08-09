@@ -187,14 +187,27 @@ func (h *Handler) Demux(ethFrame []byte, frameOffset int) error {
 
 	case OpReply:
 		hwaddr, protoaddr := afrm.Sender()
-		e := h.cache.Lookup(protoaddr)
-		if e == nil {
-			return nil
+		// Resolve EVERY entry for this address, not just the first: concurrent
+		// queriers (a background gateway resolve racing a dial to the same
+		// host) each acquire their own cache entry, and resolving only the
+		// first left the others incomplete forever — observed as a dial that
+		// re-ARPs an already-answered address until its deadline expires.
+		n := len(protoaddr)
+		resolved := false
+		for i := range h.cache.entries {
+			e := &h.cache.entries[i]
+			if e.flags&eflagInUse == 0 || !internal.BytesEqual(e.addr[:n], protoaddr) {
+				continue
+			}
+			resolved = true
+			copy(e.mac[:], hwaddr)
+			e.flags &^= eflagIncomplete | eflagIncompletePendingQuery
+			if e.flags.hasAny(eflagResolveTriggersCallback) && h.onresolve != nil {
+				h.onresolve(e.mac[:], protoaddr)
+			}
 		}
-		copy(e.mac[:], hwaddr)
-		e.flags &^= eflagIncomplete | eflagIncompletePendingQuery
-		if e.flags.hasAny(eflagResolveTriggersCallback) && h.onresolve != nil {
-			h.onresolve(e.mac[:], protoaddr)
+		if !resolved {
+			return nil
 		}
 	default:
 		return errARPUnsupported

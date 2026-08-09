@@ -349,6 +349,37 @@ func (s *StackAsync) prandRead(buf []byte) {
 }
 
 // Prand32 generates a pseudo random 32-bit unsigned integer from the internal state and advances the seed.
+// SeedNeighbor pre-populates the passive neighbor table with a static
+// IP→MAC mapping, making addr immediately resolvable without any ARP
+// exchange: dials short-circuit in startQuery's passive check and
+// patchEgressMAC rewrites listener replies to the seeded MAC. Meant for
+// networks with a deterministic address plan (a virtual switch that assigns
+// MACs by slot), where asking the network is not just wasted round trips but
+// an avoidable trust decision — an ARP flood believes whoever answers first.
+// Requires StackConfig.PassivePeers slots; returns ErrExhausted when all
+// passive slots hold other addresses.
+func (s *StackAsync) SeedNeighbor(addr netip.Addr, mac [6]byte) error {
+	if !addr.Is4() {
+		return lneto.ErrUnsupported
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	ip := addr.As4()
+	for i := range s.arpt.passivePeers {
+		v := &s.arpt.resolves4[i]
+		if v.ip == ip {
+			copy(v.mac, mac[:])
+			return nil
+		}
+		if v.ip == ([4]byte{}) {
+			v.ip = ip
+			v.mac = append(v.mac[:0], mac[:]...)
+			return nil
+		}
+	}
+	return lneto.ErrExhausted
+}
+
 func (s *StackAsync) Prand32() (randval uint32) {
 	s.mu.Lock()
 	randval = s.prand32()

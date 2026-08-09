@@ -1196,3 +1196,96 @@ func TestEgressIP_TCPMSSAdvertisesMTU(t *testing.T) {
 		t.Errorf("advertised MSS = %d, want %d (MTU %d - 40)", gotMSS, wantMSS, mtu)
 	}
 }
+
+// TestStackGoTCPDialSurvivesManyWaitIterations proves the dial wait is
+// deadline-driven, not iteration-capped. With a non-sleeping backoff (the
+// sensible choice on GOMAXPROCS=1 targets, where sleeping starves the NIC
+// poll) each wait iteration costs only a scheduler yield; the former
+// maxIter=1000 cap therefore turned the configured dial timeout into
+// "~1000 spins" — measured ~20ms on real hardware — and dials to any peer
+// slower than that failed with a spurious deadline error. Here the peer
+// stays silent for several times that many iterations while simulated time
+// barely advances; the dial must still establish once the handshake is
+// finally serviced.
+func TestStackGoTCPDialSurvivesManyWaitIterations(t *testing.T) {
+	const seed = 91011
+	const MTU = ethernet.MaxMTU
+	const tcptimeout = time.Second
+	const quietIters = 4000 // well past the former iteration cap
+	client, sv, _, svconn := newTCPStacks(t, seed, MTU)
+	err := sv.ListenTCP4(svconn, 22)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tsched := ltesto.NewSched(t)
+	tgoro := tsched.Goro()
+	sg := client.StackBlocking(tgoro.Yield).StackGo(StackGoConfig{
+		ListenerPoolConfig: TCPPoolConfig{
+			QueueSize: 4,
+			TxBufSize: MTU,
+			RxBufSize: MTU,
+			NewBackoff: func() lneto.BackoffStrategy {
+				return backoffYield
+			},
+		},
+		TCPDialTimeout: tcptimeout,
+		TCPDialRetries: 1,
+	})
+	// Simulated time: the whole quiet phase advances less than 5% of the
+	// dial timeout, so any timeout error can only come from iteration
+	// counting — exactly the regression this test guards against.
+	var now time.Duration
+	sg.blk._nanotime = func() int64 { return int64(now) }
+
+	laddr := netip.AddrPortFrom(netip.AddrFrom4(client.Addr4()), 1234)
+	raddr := netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), 22)
+	go func() {
+		_, err := sg.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM, laddr, raddr)
+		tgoro.FinishWithErr(err)
+	}()
+
+	// Quiet phase: service no packets at all; the dialer just spins in its
+	// wait loop. It must neither finish nor error here.
+	for i := 0; i < quietIters; i++ {
+		done, err := tsched.AwaitGoroYieldOrDone()
+		if done {
+			t.Fatalf("dial gave up during quiet phase after %d iterations: %v", i, err)
+		}
+		now += tcptimeout / 100000
+		tsched.YieldToGoro()
+	}
+
+	// Handshake phase: pump packets between the stacks until the dial
+	// completes. Bounded rounds so a broken handshake fails loudly.
+	var buf [ethernet.MaxMTU + ethernet.MaxOverheadSize]byte
+	for round := 0; round < 64; round++ {
+		done, err := tsched.AwaitGoroYieldOrDone()
+		if done {
+			if err != nil {
+				t.Fatalf("dial failed after handshake serviced: %v", err)
+			}
+			return // Established under deadline: test success.
+		}
+		n, err := client.EgressEthernet(buf[:])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n > 0 {
+			if err := sv.IngressEthernet(buf[:n]); err != nil {
+				t.Fatal(err)
+			}
+		}
+		n, err = sv.EgressEthernet(buf[:])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n > 0 {
+			if err := client.IngressEthernet(buf[:n]); err != nil {
+				t.Fatal(err)
+			}
+		}
+		now += tcptimeout / 100000
+		tsched.YieldToGoro()
+	}
+	t.Fatal("dial did not establish within handshake rounds")
+}

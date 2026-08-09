@@ -12,9 +12,12 @@ import (
 	"github.com/soypat/lneto/tcp"
 )
 
-const (
-	maxIter = 1000
-)
+// Blocking waits below loop until their deadline expires, not for a fixed
+// iteration count: with a non-sleeping backoff strategy such as
+// [lneto.BackoffFlagGosched] (the sensible choice on GOMAXPROCS=1 targets) an
+// iteration cap silently turns the caller's timeout into "however long N
+// spins take" — measured ~20ms for 1000 iterations, regardless of the
+// requested deadline.
 
 var (
 	errDeadlineExceed = errors.New("cywnet: deadline exceeded")
@@ -56,7 +59,7 @@ func (s StackBlocking) DoDHCPv4(reqAddr [4]byte, timeout time.Duration) (*DHCPRe
 	deadline := s.deadlineTO(timeout)
 	requested := false
 	var lastState dhcpv4.ClientState
-	for range maxIter {
+	for {
 		s.async.mu.Lock()
 		state := s.async.dhcp.State()
 		s.async.mu.Unlock()
@@ -95,7 +98,7 @@ func (s StackBlocking) DoPing(hostAddr netip.Addr, timeout time.Duration) (round
 	}
 	start := time.Now()
 	var backoffs uint
-	for range maxIter {
+	for {
 		s.async.mu.Lock()
 		completed, exists := s.async.icmp.PingPop(key)
 		s.async.mu.Unlock()
@@ -123,7 +126,7 @@ func (s StackBlocking) DoNTP(hostAddr netip.Addr, timeout time.Duration) (offset
 	deadline := s.deadlineTO(timeout)
 	var done bool
 	var backoffs uint
-	for range maxIter {
+	for {
 		offset, done = s.async.ResultNTPOffset()
 		if done {
 			return offset, nil
@@ -133,7 +136,6 @@ func (s StackBlocking) DoNTP(hostAddr netip.Addr, timeout time.Duration) (offset
 		s.backoff(backoffs)
 		backoffs++
 	}
-	return -1, errDeadlineExceed
 }
 
 func (s StackBlocking) DoResolveHardwareAddress6(addr netip.Addr, timeout time.Duration) (hw [6]byte, err error) {
@@ -143,7 +145,7 @@ func (s StackBlocking) DoResolveHardwareAddress6(addr netip.Addr, timeout time.D
 	}
 	var backoffs uint
 	deadline := s.deadlineTO(timeout)
-	for range maxIter {
+	for {
 		hw, err = s.async.ResultResolveHardwareAddress6(addr)
 		if err == nil {
 			break
@@ -152,7 +154,6 @@ func (s StackBlocking) DoResolveHardwareAddress6(addr netip.Addr, timeout time.D
 		}
 		s.backoff(backoffs)
 		backoffs++
-		err = errDeadlineExceed // Ensure that if iterations done error is returned.
 	}
 	ip4 := addr.As4()
 	s.async.arp.CacheRemove(ip4[:])
@@ -173,7 +174,7 @@ func (s StackBlocking) DoLookupIPType(host string, timeout time.Duration, qtype 
 
 	deadline := s.deadlineTO(timeout)
 	var backoffs uint
-	for range maxIter {
+	for {
 		addrs, completed, err := s.async.ResultLookupIP(host)
 		if completed {
 			return addrs, err
@@ -183,7 +184,6 @@ func (s StackBlocking) DoLookupIPType(host string, timeout time.Duration, qtype 
 		s.backoff(backoffs)
 		backoffs++
 	}
-	return nil, errDeadlineExceed
 }
 
 var errTCPFailedToConnect = errors.New("tcp failed to connect")
@@ -203,7 +203,7 @@ func (s StackBlocking) DoDialTCP(conn *tcp.Conn, localPort uint16, addrp netip.A
 func (s StackBlocking) waitDialTCP(conn *tcp.Conn, timeout time.Duration) (err error) {
 	deadline := s.deadlineTO(timeout)
 	var backoffs uint
-	for range maxIter {
+	for {
 		state := conn.State()
 		if state == tcp.StateEstablished {
 			return nil
@@ -218,7 +218,6 @@ func (s StackBlocking) waitDialTCP(conn *tcp.Conn, timeout time.Duration) (err e
 		s.backoff(backoffs)
 		backoffs++
 	}
-	return errDeadlineExceed
 }
 
 func (s StackBlocking) checkDeadline(deadline int64) error {

@@ -219,6 +219,7 @@ func (s StackGo) SocketNetip(ctx context.Context, network string, family, sotype
 				return nil, err
 			}
 			var l tcplistener
+			l.pool = pool
 			l.localAddr = net.TCPAddrFromAddrPort(laddr)
 			l.sleep = s.blk._backoff
 			err = l.l.Reset(laddr.Port(), pool)
@@ -286,6 +287,7 @@ func (u *udppktconn) RemoteAddr() net.Addr { return nil }
 
 type tcplistener struct {
 	l         tcp.Listener
+	pool      *TCPPool
 	closed    bool
 	sleep     lneto.BackoffStrategy
 	localAddr net.Addr
@@ -313,6 +315,12 @@ func (l *tcplistener) Accept() (net.Conn, error) {
 		}
 		n := l.l.NumberOfReadyToAccept()
 		if n == 0 {
+			// The accept loop doubles as the listener's maintenance clock:
+			// CheckTimeouts closes handshakes stuck pre-establishment (the
+			// pool's SYN-flood defense) so their slots return to the pool.
+			// Without a driver those conns hold slots forever — eight dead
+			// SYNs left an 8-slot listener permanently refusing connections.
+			l.pool.CheckTimeouts()
 			backoff(l.sleep, backoffs)
 			backoffs++
 			continue

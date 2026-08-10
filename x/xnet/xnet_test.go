@@ -9,6 +9,7 @@ import (
 	"net/netip"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -1498,4 +1499,243 @@ func TestEphemeralPortSequence(t *testing.T) {
 	if got := s.ephemeralPort(); got < 49152 {
 		t.Fatalf("post-cycle port %d below dynamic range", got)
 	}
+}
+
+// TestListenerRecoversFromHalfOpenFlood pins the pool maintenance the accept
+// loop drives: handshakes that die before establishment (SYN accepted, our
+// SYN-ACK lost, no final ACK ever) must not hold their pool slots past
+// EstablishedTimeout. Without CheckTimeouts running, each of those conns
+// keeps its slot forever and a pool-sized burst of dead SYNs leaves the
+// listener answering every later SYN with RST — permanently.
+func TestListenerRecoversFromHalfOpenFlood(t *testing.T) {
+	const MTU = ethernet.MaxMTU
+	const poolSize = 4
+	const svPort = 80
+	client, sv := new(StackAsync), new(StackAsync)
+	err := client.Reset(StackConfig{
+		Hostname:          "flood-client",
+		RandSeed:          21,
+		StaticAddress4:    [4]byte{10, 0, 0, 70},
+		MaxActiveTCPPorts: 8,
+		HardwareAddress:   [6]byte{0xbe, 0xef, 0, 0, 0, 70},
+		MTU:               MTU,
+		ICMPQueueLimit:    2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sv.Reset(StackConfig{
+		Hostname:          "flood-server",
+		RandSeed:          ^int64(21),
+		StaticAddress4:    [4]byte{10, 0, 0, 71},
+		MaxActiveTCPPorts: 8,
+		HardwareAddress:   [6]byte{0xbe, 0xef, 0, 0, 0, 71},
+		MTU:               MTU,
+		ICMPQueueLimit:    2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	client.SetGatewayHardwareAddr(sv.HardwareAddr())
+	sv.SetGatewayHardwareAddr(client.HardwareAddr())
+
+	svGo := sv.StackBlocking(backoffYield).StackGo(StackGoConfig{
+		ListenerPoolConfig: TCPPoolConfig{
+			PoolSize:  poolSize,
+			QueueSize: 4, TxBufSize: MTU, RxBufSize: MTU,
+			EstablishedTimeout: 100 * time.Millisecond,
+			ClosingTimeout:     100 * time.Millisecond,
+			NewBackoff:         func() lneto.BackoffStrategy { return backoffYield },
+		},
+	})
+	clGo := client.StackBlocking(backoffYield).StackGo(StackGoConfig{
+		ListenerPoolConfig: TCPPoolConfig{
+			PoolSize:  poolSize,
+			QueueSize: 4, TxBufSize: MTU, RxBufSize: MTU,
+			EstablishedTimeout: time.Second,
+			ClosingTimeout:     time.Second,
+			NewBackoff:         func() lneto.BackoffStrategy { return backoffYield },
+		},
+		TCPDialTimeout: 200 * time.Millisecond,
+		TCPDialRetries: 1,
+	})
+	lsAny, err := svGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
+		netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), svPort), netip.AddrPort{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	listener := lsAny.(net.Listener)
+	defer listener.Close()
+	go func() {
+		// The accept loop is the pool's maintenance clock; it must be parked
+		// here for the half-open conns to ever be reaped.
+		for {
+			c, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			go func(c net.Conn) {
+				var b [1]byte
+				if _, err := c.Read(b[:]); err == nil {
+					c.Write(b[:])
+				}
+				c.Close()
+			}(c)
+		}
+	}()
+
+	// The pump: client→server always flows; server→client is dropped while
+	// blackhole is set, so handshakes die half-open with the server side in
+	// SYN-RECEIVED holding a pool slot.
+	var blackhole atomic.Bool
+	stopPump := make(chan struct{})
+	defer close(stopPump)
+	go func() {
+		buf := make([]byte, MTU+ethernet.MaxOverheadSize)
+		for {
+			select {
+			case <-stopPump:
+				return
+			default:
+			}
+			moved := false
+			if n, err := client.EgressEthernet(buf); err == nil && n > 0 {
+				sv.IngressEthernet(buf[:n])
+				moved = true
+			}
+			if n, err := sv.EgressEthernet(buf); err == nil && n > 0 {
+				if !blackhole.Load() {
+					client.IngressEthernet(buf[:n])
+				}
+				moved = true
+			}
+			if !moved {
+				runtime.Gosched()
+			}
+		}
+	}()
+
+	// Phase 1: fill every pool slot with a half-open handshake.
+	blackhole.Store(true)
+	raddr := netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), svPort)
+	for i := 0; i < poolSize; i++ {
+		_, err := clGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
+			netip.AddrPort{}, raddr)
+		if err == nil {
+			t.Fatalf("dial %d succeeded with the return path blackholed", i)
+		}
+	}
+	blackhole.Store(false)
+
+	// Phase 2: give the maintenance clock room to reap (EstablishedTimeout is
+	// 100ms; the margin absorbs scheduler noise, not correctness).
+	time.Sleep(500 * time.Millisecond)
+
+	// Phase 3: a fresh handshake must complete — a slot has to be free again.
+	cAny, err := clGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
+		netip.AddrPort{}, raddr)
+	if err != nil {
+		t.Fatalf("dial after reap window failed — pool slots were never returned: %v", err)
+	}
+	c := cAny.(net.Conn)
+	c.SetDeadline(time.Now().Add(2 * time.Second))
+	if _, err := c.Write([]byte{7}); err != nil {
+		t.Fatal(err)
+	}
+	var b [1]byte
+	if _, err := c.Read(b[:]); err != nil || b[0] != 7 {
+		t.Fatalf("echo after recovery: %v %d", err, b[0])
+	}
+	c.Close()
+}
+
+// TestSeedNeighbor pins the static-neighbor promise: a dial to a seeded
+// address resolves without any ARP exchange — the SYN leaves immediately,
+// addressed to the seeded MAC. It also covers the API corners: updating an
+// existing seed, the PassivePeers capacity bound, and the IPv4-only guard.
+func TestSeedNeighbor(t *testing.T) {
+	const MTU = ethernet.MaxMTU
+	s := new(StackAsync)
+	err := s.Reset(StackConfig{
+		Hostname:          "seeded",
+		RandSeed:          31,
+		StaticAddress4:    [4]byte{10, 0, 0, 80},
+		MaxActiveTCPPorts: 4,
+		HardwareAddress:   [6]byte{0xbe, 0xef, 0, 0, 0, 80},
+		MTU:               MTU,
+		ICMPQueueLimit:    2,
+		PassivePeers:      2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var hostCtl DHCPResults
+	hostCtl.Subnet = netip.PrefixFrom(netip.AddrFrom4(s.Addr4()), 24)
+	s.AssimilateDHCPResults(&hostCtl)
+
+	peerIP := netip.AddrFrom4([4]byte{10, 0, 0, 81})
+	peerMAC := [6]byte{0x02, 0x11, 0x22, 0x33, 0x44, 0x55}
+	if err := s.SeedNeighbor(peerIP, peerMAC); err != nil {
+		t.Fatal(err)
+	}
+
+	var conn tcp.Conn
+	buf := make([]byte, 4*MTU)
+	err = conn.Configure(tcp.ConnConfig{
+		RxBuf: buf[:MTU], TxBuf: buf[MTU : 2*MTU],
+		TxPacketQueueSize: 4,
+		RWBackoff:         backoffYield,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DialTCP(&conn, 40000, netip.AddrPortFrom(peerIP, 80)); err != nil {
+		t.Fatal(err)
+	}
+
+	// Egress until the SYN appears; any ARP frame on the way out means the
+	// seed did not take.
+	ebuf := make([]byte, MTU+ethernet.MaxOverheadSize)
+	for range 8 {
+		n, err := s.EgressEthernet(ebuf)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n == 0 {
+			continue
+		}
+		f := ebuf[:n]
+		if f[12] == 0x08 && f[13] == 0x06 {
+			t.Fatal("ARP request egressed for a seeded neighbor")
+		}
+		tfrm, ok := getTCPFrame(f)
+		if !ok {
+			continue
+		}
+		_, flags := tfrm.OffsetAndFlags()
+		if flags != tcp.FlagSYN {
+			t.Fatalf("expected SYN, got %s", flags.String())
+		}
+		if [6]byte(f[0:6]) != peerMAC {
+			t.Fatalf("SYN dst MAC = %x, want seeded %x", f[0:6], peerMAC)
+		}
+		conn.Abort()
+
+		// Corners: re-seeding updates in place; the table is bounded by
+		// PassivePeers; IPv6 is refused.
+		if err := s.SeedNeighbor(peerIP, [6]byte{9, 9, 9, 9, 9, 9}); err != nil {
+			t.Fatalf("re-seed of existing neighbor: %v", err)
+		}
+		if err := s.SeedNeighbor(netip.AddrFrom4([4]byte{10, 0, 0, 82}), peerMAC); err != nil {
+			t.Fatalf("second seed within capacity: %v", err)
+		}
+		if err := s.SeedNeighbor(netip.AddrFrom4([4]byte{10, 0, 0, 83}), peerMAC); err == nil {
+			t.Fatal("third seed exceeded PassivePeers=2 yet succeeded")
+		}
+		if err := s.SeedNeighbor(netip.MustParseAddr("fe80::1"), peerMAC); err == nil {
+			t.Fatal("IPv6 seed accepted by an IPv4-only table")
+		}
+		return
+	}
+	t.Fatal("SYN never egressed")
 }

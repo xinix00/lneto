@@ -63,10 +63,14 @@ func (s StackBlocking) DoDHCPv4(reqAddr [4]byte, timeout time.Duration) (*DHCPRe
 		s.async.mu.Lock()
 		state := s.async.dhcp.State()
 		s.async.mu.Unlock()
+		// Deadline unconditionally — also while the state machine progresses.
+		// Progress-gated checking would let a peer that keeps feeding state
+		// transitions hold this loop past any deadline, and the iteration cap
+		// that used to bound that case is gone.
+		if err = s.checkDeadline(deadline); err != nil {
+			return nil, err
+		}
 		if state == lastState {
-			if err = s.checkDeadline(deadline); err != nil {
-				return nil, err
-			}
 			s.backoff(backoffs)
 			backoffs++
 		} else {

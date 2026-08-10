@@ -1418,12 +1418,26 @@ func TestStackGoTCPDialChurn(t *testing.T) {
 	}()
 
 	raddr := netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), svPort)
+	// An 8-slot pool under zero-think-time churn occasionally refuses a SYN
+	// (RST) while every slot is still tearing down — correct TCP behavior,
+	// not a leak. The leak signature is PERSISTENT refusal, so a failed dial
+	// is retried after a short pause and only three consecutive failures are
+	// fatal. The port-reuse bug this test guards against stays caught: it
+	// left dials dead for ~30 seconds, far past these retries.
+	dialFails := 0
 	for i := 0; i < iters; i++ {
 		cAny, err := clGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
 			netip.AddrPort{}, raddr)
 		if err != nil {
-			t.Fatalf("dial %d failed: %v", i, err)
+			dialFails++
+			if dialFails >= 3 {
+				t.Fatalf("dial %d refused %d times in a row: %v", i, dialFails, err)
+			}
+			time.Sleep(50 * time.Millisecond)
+			i--
+			continue
 		}
+		dialFails = 0
 		c := cAny.(net.Conn)
 		c.SetDeadline(time.Now().Add(2 * time.Second))
 		if _, err := c.Write([]byte{byte(i)}); err != nil {

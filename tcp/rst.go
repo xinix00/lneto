@@ -1,6 +1,6 @@
 package tcp
 
-import "github.com/soypat/lneto/internal"
+import "github.com/xinix00/lneto/internal"
 
 // RSTQueue is a small fixed-size queue of pending stateless RST responses.
 // It is not safe for concurrent use; callers must synchronize access.

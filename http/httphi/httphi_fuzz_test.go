@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/soypat/lneto/http/httpraw"
+	"github.com/xinix00/lneto/http/httpraw"
 )
 
 // Fuzz targets in this file are written so that a stored corpus keeps its

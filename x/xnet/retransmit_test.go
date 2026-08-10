@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // TestTCPRetransmitsLostSegment pins what [TCPPoolConfig.NanoTime] already

@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/soypat/lneto/dns"
+	"github.com/xinix00/lneto/dns"
 )
 
 // writeOpt6 encodes a single DHCPv6 option into dst using the 4-byte TLV header

@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/dhcp/dhcpv4"
-	"github.com/soypat/lneto/dns"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/ipv4"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/dhcp/dhcpv4"
+	"github.com/xinix00/lneto/dns"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/ipv4"
+	"github.com/xinix00/lneto/udp"
 )
 
 const benchSubfieldLimit = 32

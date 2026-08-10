@@ -3,7 +3,7 @@ package ntp
 import (
 	"time"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // ServerConfig configures an NTP [Server].

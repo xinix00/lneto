@@ -3,7 +3,7 @@ package ipv6
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // NewFrame returns a new [Frame] with data set to buf.

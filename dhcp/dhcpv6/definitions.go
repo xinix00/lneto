@@ -3,7 +3,7 @@ package dhcpv6
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // ClientState transition table during request:

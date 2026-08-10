@@ -14,15 +14,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/arp"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/internal/ltesto"
-	"github.com/soypat/lneto/internet/pcap"
-	"github.com/soypat/lneto/ipv4"
-	"github.com/soypat/lneto/ipv4/icmpv4"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/arp"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/internal/ltesto"
+	"github.com/xinix00/lneto/internet/pcap"
+	"github.com/xinix00/lneto/ipv4"
+	"github.com/xinix00/lneto/ipv4/icmpv4"
+	"github.com/xinix00/lneto/tcp"
 )
 
 const (

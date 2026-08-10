@@ -10,7 +10,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // MDIOBus is a HAL for MDIO bus access supporting both Clause 22 and Clause 45 devices.

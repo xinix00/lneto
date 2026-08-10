@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
 )
 
 // Handler implements the stateless UDP frame processing logic. It manages

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/tcp"
 )
 
 func TestBasicStack(t *testing.T) {

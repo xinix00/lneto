@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // TestHandlerRetransmitsAfterRTO covers the seam between a Handler and its

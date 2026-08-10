@@ -9,7 +9,7 @@ package dhcpv4
 import (
 	"testing"
 
-	"github.com/soypat/lneto/ipv4"
+	"github.com/xinix00/lneto/ipv4"
 )
 
 // doraNoClientID runs a complete DORA exchange using raw DHCP frames

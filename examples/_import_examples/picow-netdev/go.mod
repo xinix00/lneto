@@ -4,7 +4,7 @@ go 1.25.7
 
 require (
 	github.com/soypat/cyw43439 v0.1.1
-	github.com/soypat/lneto v0.1.1-0.20260425023453-aa77403a2b32
+	github.com/xinix00/lneto v0.1.1-0.20260425023453-aa77403a2b32
 )
 
 require (
@@ -13,9 +13,9 @@ require (
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
 )
 
-// This is an example taken grom github.com/soypat/lneto
+// This is an example taken grom github.com/xinix00/lneto
 // Remove this replace directive when using as own program.
-replace github.com/soypat/lneto => ../../../.
+replace github.com/xinix00/lneto => ../../../.
 
 // Local cyw43439 with the poll-based EthPoll API.
 replace github.com/soypat/cyw43439 => ../../../../cyw43439

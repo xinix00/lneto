@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/soypat/lneto/tcp"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto/tcp"
+	"github.com/xinix00/lneto/udp"
 )
 
 const (

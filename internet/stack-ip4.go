@@ -4,12 +4,12 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/ipv4"
-	"github.com/soypat/lneto/tcp"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/ipv4"
+	"github.com/xinix00/lneto/tcp"
+	"github.com/xinix00/lneto/udp"
 )
 
 // stackip4 is NOT a StackNode implementation.

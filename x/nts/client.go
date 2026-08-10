@@ -8,9 +8,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/ntp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/ntp"
 )
 
 // maxAuthBody is the maximum auth field body size:

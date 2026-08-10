@@ -7,7 +7,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 var (

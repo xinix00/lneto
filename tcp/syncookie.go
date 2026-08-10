@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // Embed low 5 bits of counter into cookie for efficient validation.

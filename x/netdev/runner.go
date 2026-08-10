@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 var (

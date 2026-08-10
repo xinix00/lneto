@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // KERecord provides zero-copy access to a single NTS-KE record within an

@@ -3,7 +3,7 @@ package ntp
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // ExtType identifies the type of an NTP extension field.

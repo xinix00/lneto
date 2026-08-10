@@ -1,8 +1,8 @@
 package icmpv6
 
 import (
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
 )
 
 type ndpCache struct {

@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/udp"
 )
 
 type StackUDPPort struct {

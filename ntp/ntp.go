@@ -7,7 +7,7 @@ import (
 	"math/bits"
 	"time"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // NTP Global Parameters.

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto/tcp"
 )
 
 // TestConn_ConcurrentCloseDoesNotDropWrite is a regression test for issue #82:

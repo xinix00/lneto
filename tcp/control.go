@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 const (

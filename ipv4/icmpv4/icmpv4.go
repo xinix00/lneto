@@ -3,7 +3,7 @@ package icmpv4
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 //go:generate stringer -type=Type,CodeDestinationUnreachable,CodeRedirect -linecomment -output stringers.go

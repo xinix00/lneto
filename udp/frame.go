@@ -3,7 +3,7 @@ package udp
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 const sizeHeader = 8

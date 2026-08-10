@@ -3,8 +3,8 @@ package icmpv4
 import (
 	"slices"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
 )
 
 var _ lneto.StackNode = (*Client)(nil) // Compile-time guarantee of interface implementation.

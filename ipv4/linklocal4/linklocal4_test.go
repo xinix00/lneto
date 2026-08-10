@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/arp"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/ipv4"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/arp"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/ipv4"
 )
 
 type fakeClock struct{ t time.Time }

@@ -6,9 +6,9 @@ import (
 	"net/netip"
 	"unsafe"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/internal"
 )
 
 type Interface[C any] struct {

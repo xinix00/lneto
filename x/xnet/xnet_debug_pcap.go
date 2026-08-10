@@ -5,7 +5,7 @@ package xnet
 import (
 	"os"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 var _pcap CapturePrinter

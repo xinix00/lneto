@@ -21,15 +21,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/http/httpraw"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/internal/ltesto"
-	"github.com/soypat/lneto/internet/pcap"
-	"github.com/soypat/lneto/ipv4"
-	"github.com/soypat/lneto/tcp"
-	"github.com/soypat/lneto/x/xnet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/http/httpraw"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/internal/ltesto"
+	"github.com/xinix00/lneto/internet/pcap"
+	"github.com/xinix00/lneto/ipv4"
+	"github.com/xinix00/lneto/tcp"
+	"github.com/xinix00/lneto/x/xnet"
 )
 
 const pollTime = 5 * time.Millisecond

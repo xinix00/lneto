@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 func TestFrame(t *testing.T) {

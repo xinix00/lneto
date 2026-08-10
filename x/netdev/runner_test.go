@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/x/netdev"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/x/netdev"
 )
 
 // mockDev is a DevEthernet test double. The mutex makes SetEthRecvHandler

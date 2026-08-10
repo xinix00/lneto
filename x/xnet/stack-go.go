@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/tcp"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/tcp"
+	"github.com/xinix00/lneto/udp"
 )
 
 // Socket types

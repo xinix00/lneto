@@ -278,10 +278,9 @@ func (tcb *ControlBlock) PendingSegment(payloadLen int) (_ Segment, ok bool) {
 		// Optimist Strategy: retransmit oldest data once.
 		return Segment{SEQ: tcb.snd.UNA, DATALEN: Size(payloadLen), ACK: tcb.rcv.NXT, WND: tcb.rcv.WND, Flags: FlagACK}, true
 	}
-	established := tcb._state == StateEstablished
-	canSendData := established || tcb._state == StateCloseWait
+	canSendData := tcb._state.txQueuedDataOpen()
 	if !canSendData {
-		payloadLen = 0 // Can't send data if not established or close-wait.
+		payloadLen = 0 // No send-buffer data may go out in this state.
 	}
 	if pending == 0 && payloadLen == 0 {
 		return Segment{}, false // No pending segment.
@@ -521,8 +520,16 @@ func (tcb *ControlBlock) validateOutgoingSegment(seg Segment) (err error) {
 			err = errSeqNotInWindow
 		}
 
-	case seg.DATALEN > 0 && (tcb._state == StateFinWait1 || tcb._state == StateFinWait2):
-		err = errConnectionClosing // Case 1: No further SENDs from the user will be accepted by the TCP implementation.
+	case seg.DATALEN > 0 && tcb._state == StateFinWait2:
+		// FIN-WAIT-2 is reached by our FIN being acknowledged, which acknowledges
+		// everything below it: no unacknowledged data can remain, so data here is
+		// a caller error. FIN-WAIT-1 is different — the FIN sits above data the
+		// peer may not have received yet, and that data must still go out or the
+		// peer can never cross the gap to process the close (RFC 9293 §3.10.8).
+		// The rule that "no further SENDs from the user will be accepted" bounds
+		// what the application may queue, which [Handler.Write] enforces; it does
+		// not bound retransmission of data already accepted from it.
+		err = errConnectionClosing
 
 	case checkSeq && tcb.snd.WND == 0 && seg.DATALEN > 0 && seg.SEQ == tcb.snd.NXT:
 		err = errZeroWindow

@@ -154,7 +154,7 @@ func testStreamIntegrity(t *testing.T, mode mangleMode) {
 	// dropEver'th server→client frame. Only the data direction is touched, so
 	// the receiver's own ACKs always arrive — that keeps the test honest about
 	// what it claims to exercise.
-	var mangled atomic.Int64
+	var mangled, svTx, clTx atomic.Int64
 	stopPump := make(chan struct{})
 	defer close(stopPump)
 	go func() {
@@ -169,10 +169,12 @@ func testStreamIntegrity(t *testing.T, mode mangleMode) {
 			}
 			moved := false
 			if n, err := client.EgressEthernet(buf); err == nil && n > 0 {
+				clTx.Add(1)
 				sv.IngressEthernet(buf[:n])
 				moved = true
 			}
 			if n, err := sv.EgressEthernet(buf); err == nil && n > 0 {
+				svTx.Add(1)
 				seen++
 				switch {
 				case seen%dropEver != 0:
@@ -197,6 +199,26 @@ func testStreamIntegrity(t *testing.T, mode mangleMode) {
 		}
 	}()
 
+	// An independent monitor: the reader below blocks, so it cannot report on
+	// its own stall. This says whether frames keep flowing while no byte is
+	// delivered — a silent sender and a refusing receiver need opposite fixes.
+	var rxBytes atomic.Int64
+	go func() {
+		prevSv, prevCl, prevRx := int64(0), int64(0), int64(0)
+		for {
+			select {
+			case <-stopPump:
+				return
+			default:
+			}
+			time.Sleep(2 * time.Second)
+			svN, clN, rxN := svTx.Load(), clTx.Load(), rxBytes.Load()
+			t.Logf("monitor: rx=%d (+%d)  sv->cl=%d (+%d)  cl->sv=%d (+%d)  mangled=%d",
+				rxN, rxN-prevRx, svN, svN-prevSv, clN, clN-prevCl, mangled.Load())
+			prevSv, prevCl, prevRx = svN, clN, rxN
+		}
+	}()
+
 	raddr := netip.AddrPortFrom(netip.AddrFrom4(sv.Addr4()), svPort)
 	cAny, err := clGo.SocketNetip(context.Background(), "tcp", syscall.AF_INET, sockSTREAM,
 		netip.AddrPort{}, raddr)
@@ -213,11 +235,15 @@ func testStreamIntegrity(t *testing.T, mode mangleMode) {
 	for len(got) < total {
 		n, err := conn.Read(rb)
 		got = append(got, rb[:n]...)
+		rxBytes.Store(int64(len(got)))
 		// Progress trace: a stream that stops dead and one that crawls need
 		// different fixes, and the difference is invisible in a final verdict.
 		if time.Since(lastLog) > 2*time.Second {
-			t.Logf("t=%4.1fs %7d/%d bytes (+%d since last, %d dropped)",
-				time.Since(t0).Seconds(), len(got), total, len(got)-lastLen, mangled.Load())
+			// Frame counters separate the two possible stalls: a sender that
+			// stopped transmitting versus a receiver refusing what arrives.
+			t.Logf("t=%4.1fs %7d/%d bytes (+%d since last, %d mangled) sv->cl frames=%d cl->sv frames=%d",
+				time.Since(t0).Seconds(), len(got), total, len(got)-lastLen, mangled.Load(),
+				svTx.Load(), clTx.Load())
 			lastLog, lastLen = time.Now(), len(got)
 		}
 		if err != nil {

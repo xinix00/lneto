@@ -87,6 +87,14 @@ func NewTCPPool(cfg TCPPoolConfig) (*TCPPool, error) {
 			TxPacketQueueSize: cfg.QueueSize,
 			Logger:            cfg.ConnLogger,
 			RWBackoff:         cfg.NewBackoff(),
+			// Retransmission timing, as NanoTime's contract promises. Without a
+			// LossRecovery a connection has no retransmission timer at all: a
+			// single lost segment leaves the sender waiting for an ACK that can
+			// never come and the receiver waiting for data nobody will resend.
+			// One RTO per connection — it shadows that connection's send
+			// sequence space, so it cannot be shared.
+			LossRecovery: new(tcp.RTO),
+			Nanotime:     pool.now,
 		}
 		err := pool.conns[i].Configure(conncfg)
 		if err != nil {

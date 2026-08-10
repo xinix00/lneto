@@ -329,6 +329,19 @@ func (s State) TxDataOpen() bool {
 	return s == StateEstablished || s == StateCloseWait
 }
 
+// txQueuedDataOpen reports whether the state may still put already-queued
+// send-buffer data on the wire. It differs from [State.TxDataOpen], which answers
+// whether the application may queue more: after a local close the FIN occupies a
+// sequence number above data the peer has not acknowledged, so that data must
+// still be transmitted (or retransmitted) or neither side can make progress —
+// the peer cannot process the FIN across a gap. RFC 9293 §3.10.8.
+//
+// Unexported deliberately: it is the internal distinction the send path needs,
+// not a new promise to callers.
+func (s State) txQueuedDataOpen() bool {
+	return s.TxDataOpen() || s == StateFinWait1 || s == StateClosing || s == StateLastAck
+}
+
 // RxDataOpen returns true if the state allows the receiving of incoming data segments.
 // Combine with [State.IsPreestablished] to know whether there is no more data to be received over the network.
 func (s State) RxDataOpen() bool {

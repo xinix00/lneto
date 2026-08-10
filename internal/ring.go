@@ -157,7 +157,7 @@ func (r *Ring) ReadDiscard(n int) error {
 	case n > buffered:
 		return errDiscardExceeds
 	case n == buffered:
-		r.Reset()
+		r.emptied()
 	case n+r.Off > len(r.Buf):
 		r.Off = n - (len(r.Buf) - r.Off)
 	default:
@@ -222,6 +222,25 @@ func (r *Ring) read(b []byte) (n int, err error) {
 func (r *Ring) Reset() {
 	r.Off = 0
 	r.End = 0
+}
+
+// emptied marks the ring empty after its readable data has been consumed,
+// leaving the write position where it is instead of rewinding it to index 0.
+//
+// Both are valid empty states (End==0 is what empty means, and the write
+// position is then Off), but rewinding is only safe when nothing depends on the
+// buffer's physical layout. Bytes staged past the write position with
+// [Ring.PeekWrite] do: they are addressed relative to that position and
+// committed later with [Ring.Commit]. Rewinding would move the position out
+// from under them, so a commit would hand back whatever bytes happen to live at
+// the start of the buffer. TCP stages out-of-order segments this way, which is
+// how a stream can arrive with the correct length and the wrong contents.
+func (r *Ring) emptied() {
+	off := r.End
+	if off == len(r.Buf) {
+		off = 0 // Tail exhausted: the next write wraps (see [Ring.writeStart]).
+	}
+	r.Off, r.End = off, 0
 }
 
 // Size returns the capacity of the ring buffer.
@@ -306,7 +325,7 @@ func (r *Ring) onReadEnd(totalRead int) {
 	}
 	newOff := r.addOff(r.Off, totalRead)
 	if newOff == r.End {
-		r.Reset()
+		r.emptied()
 	} else if newOff == len(r.Buf) {
 		r.Off = 0 // Optimization case.
 	} else {

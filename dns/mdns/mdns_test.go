@@ -7,7 +7,7 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/soypat/lneto/dns"
+	"github.com/xinix00/lneto/dns"
 )
 
 func mustNewName(s string) dns.Name {

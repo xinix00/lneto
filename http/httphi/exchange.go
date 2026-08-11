@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/http/httpraw"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/http/httpraw"
+	"github.com/xinix00/lneto/internal"
 )
 
 // maxStatusLine bounds the response status line: "HTTP/1.1 " + 3 digit code +

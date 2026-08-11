@@ -1,6 +1,6 @@
 package ipv6
 
-import "github.com/soypat/lneto/ipv4"
+import "github.com/xinix00/lneto/ipv4"
 
 const (
 	sizeHeader = 40

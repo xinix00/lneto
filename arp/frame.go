@@ -6,8 +6,8 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // NewFrame returns a Frame with data set to buf.

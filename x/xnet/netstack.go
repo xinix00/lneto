@@ -5,8 +5,8 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/x/netdev"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/x/netdev"
 )
 
 // Netstack is a more modern outward facing API wrapper on StackAsync.

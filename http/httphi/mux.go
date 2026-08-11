@@ -6,9 +6,9 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/http/httpraw"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/http/httpraw"
+	"github.com/xinix00/lneto/internal"
 )
 
 // Handle is a extremely low-level HTTP handling method used internally in [Router].

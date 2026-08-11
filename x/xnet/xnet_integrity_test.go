@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // TestTCPStreamIntegrityUnderLoss pins the promise a TCP stream makes: the

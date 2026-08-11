@@ -3,7 +3,7 @@ package ethernet
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // NewFrame returns a EthFrame with data set to buf.

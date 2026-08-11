@@ -3,11 +3,11 @@ package linklocal4
 import (
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/arp"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/ipv4"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/arp"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/ipv4"
 )
 
 // Handler implements the [RFC3927] IPv4 link-local address autoconfiguration

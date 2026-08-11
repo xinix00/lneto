@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/internal/ltesto"
-	"github.com/soypat/lneto/internet/pcap"
-	"github.com/soypat/lneto/ipv4"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/internal/ltesto"
+	"github.com/xinix00/lneto/internet/pcap"
+	"github.com/xinix00/lneto/ipv4"
 )
 
 func main() {

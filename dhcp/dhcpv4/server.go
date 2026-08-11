@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/ipv4"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/ipv4"
 )
 
 var errOptionNotFit = errors.New("DHCPv4: options dont fit")

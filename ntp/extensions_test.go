@@ -3,7 +3,7 @@ package ntp
 import (
 	"testing"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 func TestNextExtField_Empty(t *testing.T) {

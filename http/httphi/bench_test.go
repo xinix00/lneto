@@ -4,8 +4,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/soypat/lneto/http/httpraw"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/http/httpraw"
+	"github.com/xinix00/lneto/internal"
 )
 
 // benchConn replays a fixed request and discards the response. It allocates

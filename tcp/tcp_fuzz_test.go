@@ -3,7 +3,7 @@ package tcp
 import (
 	"testing"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 func FuzzTCPControlBlock(f *testing.F) {

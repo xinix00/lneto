@@ -4,8 +4,8 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/tcp"
 )
 
 func BenchmarkARPExchange(b *testing.B) {

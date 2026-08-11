@@ -3,7 +3,7 @@ package dhcpv4
 import (
 	"unsafe"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 //go:generate stringer -type=OptNum,Op,MessageType,ClientState -linecomment -output stringers.go

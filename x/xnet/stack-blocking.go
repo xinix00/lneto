@@ -6,10 +6,10 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/dhcp/dhcpv4"
-	"github.com/soypat/lneto/dns"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/dhcp/dhcpv4"
+	"github.com/xinix00/lneto/dns"
+	"github.com/xinix00/lneto/tcp"
 )
 
 // Blocking waits below loop until their deadline expires, not for a fixed

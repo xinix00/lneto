@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/tcp"
 )
 
 func TestTCPConn_SetDeadline_Established(t *testing.T) {

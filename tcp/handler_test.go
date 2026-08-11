@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 func TestHandler(t *testing.T) {
@@ -331,7 +331,7 @@ func clear[E any, T []E](s T) {
 }
 
 // TestTxBufferFreedOnACK tests that the TX buffer is freed when ACKs are received.
-// This is a regression test for https://github.com/soypat/lneto/issues/22
+// This is a regression test for https://github.com/xinix00/lneto/issues/22
 // where ringTx.sentoff and ringTx.sentend were not being updated when ACKs
 // were received, causing AvailableOutput() to return 0 indefinitely after
 // the initial buffer was consumed.

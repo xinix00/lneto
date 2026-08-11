@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ntp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ntp"
 	// NOTE: tests exercising AES-SIV-CMAC-256 are skipped pending
 	// due to missing stdlib support.
 )
@@ -467,7 +467,7 @@ func FuzzNextExtField(f *testing.F) {
 }
 
 /*
-DISABLED: depends on github.com/soypat/lneto/x/siv (see note above).
+DISABLED: depends on github.com/xinix00/lneto/x/siv (see note above).
 
 func TestServer_Reset_Validation(t *testing.T) {
 	key := make([]byte, 32)

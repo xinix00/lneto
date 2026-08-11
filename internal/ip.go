@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 func GetIPAddr(buf []byte) (src, dst []byte, id, ipEndOff uint16, err error) {

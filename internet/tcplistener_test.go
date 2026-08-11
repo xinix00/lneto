@@ -6,8 +6,8 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/tcp"
 )
 
 func TestListener_SingleConnection(t *testing.T) {

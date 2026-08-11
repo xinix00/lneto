@@ -3,7 +3,7 @@ package netdev
 import (
 	"sync/atomic"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 // TODO(soypat): True Zero Copy (TZC)

@@ -3,7 +3,7 @@ package arp
 import (
 	"errors"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 //go:generate stringer -type=Operation -linecomment -output stringers.go .

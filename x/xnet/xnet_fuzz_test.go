@@ -7,13 +7,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/http/httpraw"
-	"github.com/soypat/lneto/internal/ltesto"
-	"github.com/soypat/lneto/ipv4"
-	"github.com/soypat/lneto/tcp"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/http/httpraw"
+	"github.com/xinix00/lneto/internal/ltesto"
+	"github.com/xinix00/lneto/ipv4"
+	"github.com/xinix00/lneto/tcp"
+	"github.com/xinix00/lneto/udp"
 )
 
 func FuzzStackPacketHTTP(f *testing.F) {

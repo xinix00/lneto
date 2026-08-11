@@ -22,7 +22,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/soypat/lneto/ntp"
+	"github.com/xinix00/lneto/ntp"
 )
 
 func main() {

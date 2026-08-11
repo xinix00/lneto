@@ -3,7 +3,7 @@ package tcp
 import (
 	"strings"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 type OptionKind uint8

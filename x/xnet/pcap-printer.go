@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internet/pcap"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internet/pcap"
 )
 
 type CapturePrinterConfig struct {

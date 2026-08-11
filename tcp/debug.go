@@ -3,7 +3,7 @@ package tcp
 import (
 	"log/slog"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 // logger provides methods that can be easily attached by struct embedding

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/udp"
 )
 
 const (

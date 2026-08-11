@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 // kvBuffer is a common key-value store engine for Cookie, Form, Header and other HTTP abstractions that need

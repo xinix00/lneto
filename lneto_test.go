@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/internal/ltesto"
-	"github.com/soypat/lneto/ipv4"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/internal/ltesto"
+	"github.com/xinix00/lneto/ipv4"
+	"github.com/xinix00/lneto/tcp"
 )
 
 func TestTCPMarshalUnmarshal(t *testing.T) {
@@ -164,7 +164,7 @@ func TestNoDeps(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const expect = "module github.com/soypat/lneto\n\ngo 1.2"
+	const expect = "module github.com/xinix00/lneto\n\ngo 1.2"
 	if !bytes.HasPrefix(data, []byte(expect)) {
 		t.Fatalf("unexpected go.mod file:\nexpect:%sx\ngot:%s", expect, string(data))
 	}

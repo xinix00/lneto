@@ -2,7 +2,7 @@
 
 package internet
 
-import "github.com/soypat/lneto"
+import "github.com/xinix00/lneto"
 
 func makecbnode(s lneto.StackNode) cbnode {
 	return cbnode{

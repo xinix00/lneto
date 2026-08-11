@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/soypat/cyw43439"
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/x/netdev"
-	"github.com/soypat/lneto/x/xnet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/x/netdev"
+	"github.com/xinix00/lneto/x/xnet"
 )
 
 var (

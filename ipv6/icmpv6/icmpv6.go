@@ -3,7 +3,7 @@ package icmpv6
 import (
 	"encoding/binary"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 //go:generate stringer -type=Type,CodeDestinationUnreachable,CodeParameterProblem -linecomment -output stringers.go

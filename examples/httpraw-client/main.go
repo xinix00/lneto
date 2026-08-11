@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/soypat/lneto/http/httpraw"
+	"github.com/xinix00/lneto/http/httpraw"
 )
 
 func main() {

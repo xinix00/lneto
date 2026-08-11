@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto/tcp"
 )
 
 const (

@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 const minMTU = 256

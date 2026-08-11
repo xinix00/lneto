@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/x/xnet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/x/xnet"
 )
 
 const pollTime = 5 * time.Millisecond

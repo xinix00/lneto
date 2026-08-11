@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 func TestTryParse_IncrementalRequest(t *testing.T) {

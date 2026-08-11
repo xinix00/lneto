@@ -1,6 +1,6 @@
 package tcp
 
-import "github.com/soypat/lneto/internal"
+import "github.com/xinix00/lneto/internal"
 
 // maxReasmSegments bounds how many distinct out-of-order segments may be held.
 // It caps only fixed metadata; payload bytes live in the receive ring, bounded

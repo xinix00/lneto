@@ -5,8 +5,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
 )
 
 // pool is a [sync.Pool] like

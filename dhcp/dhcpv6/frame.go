@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 // NewFrame returns a Frame backed by buf.

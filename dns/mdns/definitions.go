@@ -1,7 +1,7 @@
 package mdns
 
 import (
-	"github.com/soypat/lneto/dns"
+	"github.com/xinix00/lneto/dns"
 )
 
 // IPv4MulticastAddr is the IPv4 multicast address used by mDNS (224.0.0.251).

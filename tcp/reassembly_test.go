@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 func TestReassemblyDisabledByDefault(t *testing.T) {

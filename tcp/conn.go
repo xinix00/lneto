@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
 )
 
 var (

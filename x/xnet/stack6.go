@@ -3,12 +3,12 @@ package xnet
 import (
 	"net/netip"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
-	"github.com/soypat/lneto/internet"
-	"github.com/soypat/lneto/ipv6/icmpv6"
-	"github.com/soypat/lneto/tcp"
-	"github.com/soypat/lneto/udp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
+	"github.com/xinix00/lneto/internet"
+	"github.com/xinix00/lneto/ipv6/icmpv6"
+	"github.com/xinix00/lneto/tcp"
+	"github.com/xinix00/lneto/udp"
 )
 
 var _ Stack6 = (*stack6)(nil)

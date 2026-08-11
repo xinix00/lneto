@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // TestHandlerStreamIntegrityUnderReorder drives one handler pair with a

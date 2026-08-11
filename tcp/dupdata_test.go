@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // TestHandlerRejectsDuplicateData is the minimal statement of a stream

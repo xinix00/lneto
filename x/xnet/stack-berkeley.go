@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 const (

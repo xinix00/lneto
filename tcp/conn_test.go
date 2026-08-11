@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 func newConfiguredConn(t *testing.T) *Conn {

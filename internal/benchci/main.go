@@ -187,7 +187,7 @@ func render(w io.Writer, title string, results []result) error {
 
 // shortPkg trims the well-known module prefix for readability.
 func shortPkg(pkg string) string {
-	const prefix = "github.com/soypat/lneto/"
+	const prefix = "github.com/xinix00/lneto/"
 	if pkg == "" {
 		return "-"
 	}

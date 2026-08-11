@@ -6,8 +6,8 @@ import (
 	"net"
 	"slices"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/internal"
 )
 
 // node is a concrete StackNode as stored in Stacks. Methods are devirtualized for performance benefits, especially on TinyGo.

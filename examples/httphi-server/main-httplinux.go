@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/soypat/lneto/http/httphi"
+	"github.com/xinix00/lneto/http/httphi"
 )
 
 const (

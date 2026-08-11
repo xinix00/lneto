@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 
-	"github.com/soypat/lneto/http/httphi"
-	"github.com/soypat/lneto/http/httpraw"
+	"github.com/xinix00/lneto/http/httphi"
+	"github.com/xinix00/lneto/http/httpraw"
 )
 
 // ExampleRouter_linux goes over how to setup a linux server using raw linux connections.

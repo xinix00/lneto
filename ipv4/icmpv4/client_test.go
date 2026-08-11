@@ -3,7 +3,7 @@ package icmpv4
 import (
 	"testing"
 
-	"github.com/soypat/lneto/internal"
+	"github.com/xinix00/lneto/internal"
 )
 
 const (

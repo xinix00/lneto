@@ -3,7 +3,7 @@ package httphi
 import (
 	"testing"
 
-	"github.com/soypat/lneto/http/httpraw"
+	"github.com/xinix00/lneto/http/httpraw"
 )
 
 // budgetMux exposes a settable path value count so budget tests can sweep it

@@ -4,9 +4,9 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
-	"github.com/soypat/lneto/tcp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
+	"github.com/xinix00/lneto/tcp"
 )
 
 func TestStackAsyncListener_SingleConnection(t *testing.T) {

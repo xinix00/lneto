@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ethernet"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ethernet"
 )
 
 // TestStackGoSelfDial has one stack dial its own address; a device-level MAC

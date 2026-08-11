@@ -3,7 +3,7 @@ package icmpv6
 import (
 	"errors"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 const (

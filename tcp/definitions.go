@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 //go:generate stringer -type=State,OptionKind -linecomment -output stringers.go .

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soypat/lneto/http/httpraw"
+	"github.com/xinix00/lneto/http/httpraw"
 
-	"github.com/soypat/lneto"
+	"github.com/xinix00/lneto"
 )
 
 func nopBackoff(consecutiveBackoffs uint) time.Duration { return lneto.BackoffFlagNop }

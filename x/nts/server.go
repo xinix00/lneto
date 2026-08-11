@@ -7,8 +7,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/soypat/lneto"
-	"github.com/soypat/lneto/ntp"
+	"github.com/xinix00/lneto"
+	"github.com/xinix00/lneto/ntp"
 )
 
 // ServerConfig configures an NTS [Server].
